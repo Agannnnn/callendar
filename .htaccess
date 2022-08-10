@@ -1,0 +1,6 @@
+RewriteEngine On
+
+RewriteCond %{HTTP_HOST} ^localhost$
+RewriteCond %{REQUEST_URI} !^/projek-kalender/public_html
+
+RewriteRule ^(.*)$ /projek-kalender/public_html/$1 [L]
