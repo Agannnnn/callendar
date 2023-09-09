@@ -105,7 +105,7 @@ main .section-input .section-input-form .input label {
 main .section-input .section-input-form .input textarea {
   resize: vertical;
 }
-main .section-input .section-input-form button[type=submit] {
+main .section-input .section-input-form button[type="submit"] {
   width: 100%;
   padding: 5px 0;
   border-radius: 4px;
@@ -115,7 +115,10 @@ main .section-input .section-input-form button[type=submit] {
   border: 2px solid rgb(100, 100, 100);
   background-color: #fff;
 }
-main .section-input .section-input-form button[type=submit]:is(:hover, :active, :focus) {
+main
+  .section-input
+  .section-input-form
+  button[type="submit"]:is(:hover, :active, :focus) {
   background-color: rgb(100, 100, 100);
   color: #fff;
 }
@@ -161,10 +164,10 @@ main .container .calendar .day:is(:hover, :focus) .event {
   z-index: 4;
   display: block;
 }
-main .container .calendar .day.ada-acara {
+main .container .calendar .day.filled {
   border: 2px solid rgb(100, 100, 100);
 }
-main .container .calendar .day.ada-acara ~ .event {
+main .container .calendar .day.filled ~ .event {
   border-top-color: rgb(141, 114, 197) !important;
 }
 main .container .calendar .day .day-date {
@@ -213,7 +216,14 @@ main .container .calendar .day .event li .buttons button:is(:hover, :focus) {
   background-color: rgb(100, 100, 100);
   color: #fff;
 }
-main .container .calendar .day .event li .buttons button:is(:hover, :focus).btn-hapus-event {
+main
+  .container
+  .calendar
+  .day
+  .event
+  li
+  .buttons
+  button:is(:hover, :focus).delete-event-btn {
   border-color: red;
   background-color: red;
 }
