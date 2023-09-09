@@ -15,7 +15,11 @@
     <input type="text" name="username" id="username" placeholder="Masukan username anda">
     <label for="password">Password</label>
     <input type="password" name="password" id="password" placeholder="Masukan password anda">
+    <?php if (isset($error)): ?>
+      <span style="display:block;color:red;padding-bottom:10px;">Username atau Password Salah!</span>
+    <?php endif ?>
     <button type="submit">Login</button>
+    <a href="<?= APP_URL ?>signup/">Sign Up</a>
   </form>
 </body>
 
