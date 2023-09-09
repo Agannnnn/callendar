@@ -46,7 +46,7 @@ function POST()
   $owner = $conn->real_escape_string($_SESSION['user_id']);
 
   $stmt = $conn->prepare("INSERT INTO events (id, name, description, start, end, owner) VALUES (UUID(),?,?,?,?,?)");
-  $stmt->bind_param('ssss', $name, $description, $start, $end, $owner);
+  $stmt->bind_param('sssss', $name, $description, $start, $end, $owner);
   if ($stmt->execute()) {
     http_response_code(200);
     echo json_encode(['code' => 200, 'message' => 'New event is saved']);
