@@ -6,54 +6,96 @@ define("DB_USERNAME", "root");
 define("DB_PASSWORD", "");
 define("DB_NAME", "callendar_project");
 
-$DB = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
-
 class Authentication
 {
-  static function check()
+  private mysqli $db;
+
+  function __construct(mysqli $conn)
   {
-    global $DB;
+    $this->db = $conn;
+  }
 
-    if (!isset($_SESSION['username']) || !isset($_SESSION['login_info'])) {
-      if (!preg_match('/(login|logout)\/(index\.php){0,1}$/', $_SERVER['REQUEST_URI'])) {
-        header('Location: ' . APP_URL . 'login/');
-      }
+  /**
+   * Making sure it's not login or logout page
+   */
+  private function checkUrl(): bool
+  {
+    return !preg_match('/(login|logout)\/(index\.php){0,1}$/', $_SERVER['REQUEST_URI']);
+  }
+
+  /**
+   * Checks if client has logged in
+   */
+  public function isAuthenticated(): bool
+  {
+    // Checks if sessions exists
+    if (!(isset($_SESSION['user_id']) && isset($_SESSION['login_info']))) {
       return false;
     }
-
-    $username = $DB->real_escape_string($_SESSION['username']);
-    $stmt = $DB->prepare("SELECT `info_login` FROM `akun` WHERE `username` = ?");
-    $stmt->bind_param('s', $username);
-    if (!$stmt->execute()) {
-      if (!preg_match('/(login|logout)\/(index\.php){0,1}$/', $_SERVER['REQUEST_URI'])) {
-        header('Location: ' . APP_URL . 'login/');
-      }
+    // Checks if sessions are not empty
+    if (empty($_SESSION['user_id']) || empty($_SESSION['login_info'])) {
       return false;
     }
+    $userId = $this->db->real_escape_string($_SESSION['user_id']);
+    $loginInfo = $this->db->real_escape_string($_SESSION['login_info']);
 
-    $result = $stmt->get_result();
-    $loginInfo = $result->fetch_assoc();
-
-    if ($loginInfo['info_login'] != $_SESSION['login_info']) {
-      if (!preg_match('/(login|logout)\/(index\.php){0,1}$/', $_SERVER['REQUEST_URI'])) {
-        header('Location: ' . APP_URL . 'login/');
-      }
+    // Checks if login info is valid
+    $stmt = $this->db->prepare('SELECT id FROM users WHERE id = ? AND login_info = ?');
+    $stmt->bind_param('ss', $userId, $loginInfo);
+    $stmt->execute();
+    if ($stmt->affected_rows == 1) {
+      return true;
+    } else {
       return false;
     }
+  }
+
+  public function login(string $username, string $pasword): bool
+  {
+    $escUsername = $this->db->real_escape_string($username);
+    $escPasword = password_hash($this->db->real_escape_string($pasword), PASSWORD_DEFAULT);
+
+    $stmt = $this->db->prepare('SELECT id FROM users WHERE username = ? AND password = ?');
+    $stmt->bind_param('ss', $escUsername, $escPasword);
+    $stmt->execute();
+
+    if ($stmt->affected_rows == 1) {
+      $res = $stmt->get_result();
+      $id = $res->fetch_assoc()['id'];
+
+      $loginInfo = hash('sha256', (new DateTime())->getTimestamp() . $id);
+
+      $stmt = $this->db->prepare('UPDATE users SET login_id = ? WHERE id = ?');
+      $stmt->bind_param('ss', $loginInfo, $id);
+      $stmt->execute();
+
+      if ($stmt->affected_rows == 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public function logout()
+  {
+    session_destroy();
     return true;
   }
 }
 
-function writeLog($message)
+function writeLog($activity)
 {
   global $DB;
 
-  $username = $DB->real_escape_string($_SESSION['username']);
-  $message = $DB->real_escape_string($message);
+  $username = $DB->real_escape_string($_SESSION['user_id']);
+  $activity = $DB->real_escape_string($activity);
 
-  $stmt = $DB->prepare('INSERT INTO `logs` (`username`, `pesan`) VALUES (?,?)');
-  $stmt->bind_param('ss', $username, $message);
+  $stmt = $DB->prepare('INSERT INTO `logs` (`user_id`, `activity`) VALUES (?,?)');
+  $stmt->bind_param('ss', $username, $activity);
   $stmt->execute();
 }
 
 session_start();
+
+$conn = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+$auth = new Authentication($conn);
