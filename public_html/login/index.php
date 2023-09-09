@@ -3,7 +3,7 @@ require_once __DIR__ . "/../../config.php";
 
 if (Authentication::check()) {
   header('Location: ' . APP_URL);
-  die();
+  exit;
 }
 
 function handleGet()
