@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
   const formAddEvent = document.querySelector("#add-event");
   const formEditEvent = document.querySelector("#edit-event");
-  const editEventBtn = document.querySelectorAll(".btn-edit-event");
-  const hapusEventBtn = document.querySelectorAll(".btn-hapus-event");
+  const editEventBtn = document.querySelectorAll(".edit-event-btn");
+  const deleteEventBtn = document.querySelectorAll(".delete-event-btn");
   const eventsCard = document.querySelectorAll(".day");
+
   formAddEvent.addEventListener("submit", function (e) {
     e.preventDefault();
     const name = formAddEvent.elements[0].value;
@@ -11,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const dateFrom = formAddEvent.elements[1].value;
     const dateTo = formAddEvent.elements[2].value;
     if (name.match(/^.+$/)) {
-      fetch("".concat(window.location.origin, "/api/event.php"), {
+      fetch("".concat(window.location, "api/event.php"), {
         method: "POST",
         credentials: "include",
         headers: {
@@ -39,12 +40,13 @@ document.addEventListener("DOMContentLoaded", function () {
           alert(res.message);
         })
         ["catch"](function () {
-          return alert("Data acara tidak berhasil ditambahkan");
+          return alert("Failed to insert new event");
         });
     } else {
-      alert("Isikan input dengan benar");
+      alert("Please fill all the inputs");
     }
   });
+
   formEditEvent.addEventListener("submit", function (e) {
     e.preventDefault();
     const eId = formEditEvent.elements[0].value;
@@ -53,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const dateFrom = formEditEvent.elements[2].value;
     const dateTo = formEditEvent.elements[3].value;
     if (name.match(/^.+$/)) {
-      fetch("".concat(window.location.origin, "/api/event.php"), {
+      fetch("".concat(window.location, "api/event.php"), {
         method: "POST",
         credentials: "include",
         headers: {
@@ -85,14 +87,15 @@ document.addEventListener("DOMContentLoaded", function () {
           return alert("Data acara tidak berhasil diubah");
         });
     } else {
-      alert("Isikan input dengan benar");
+      alert("Please fill all the inputs");
     }
   });
+
   editEventBtn.forEach(function (btn) {
     btn.addEventListener("click", function () {
       fetch(
         ""
-          .concat(window.location.origin, "/api/event.php?eId=")
+          .concat(window.location, "api/event.php?eId=")
           .concat(btn.dataset.eId),
         {
           method: "GET",
@@ -111,23 +114,24 @@ document.addEventListener("DOMContentLoaded", function () {
           formEditEvent.querySelector("#inputs").classList.remove("hidden");
           const formEditInputs = formEditEvent.elements;
           formEditInputs[0].value = btn.dataset.eId;
-          formEditInputs[1].value = eventData.nama;
-          formEditInputs[4].value = eventData.deskripsi
+          formEditInputs[1].value = eventData.name;
+          formEditInputs[4].value = eventData.description
             .split(/\s/)
-            .map(function (kata) {
-              kata = kata.replace(/[^\\r]\\n/g, "\r\n");
-              kata = kata.replace(/\\\\/g, "\\");
-              return kata;
+            .map(function (word) {
+              word = word.replace(/[^\\r]\\n/g, "\r\n");
+              word = word.replace(/\\\\/g, "\\");
+              return word;
             })
             .join(" ");
-          formEditInputs[2].value = eventData.dari;
-          formEditInputs[3].value = eventData.sampai;
+          formEditInputs[2].value = eventData.start;
+          formEditInputs[3].value = eventData.end;
         });
     });
   });
-  hapusEventBtn.forEach(function (btn) {
+
+  deleteEventBtn.forEach(function (btn) {
     btn.addEventListener("click", function () {
-      fetch("".concat(window.location.origin, "/api/event.php"), {
+      fetch("".concat(window.location, "api/event.php"), {
         credentials: "include",
         method: "POST",
         headers: {
@@ -150,10 +154,11 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         })
         ["catch"](function () {
-          return alert("Data tidak berhasil dihapus");
+          return alert("Failed to remove event");
         });
     });
   });
+
   eventsCard.forEach(function (card) {
     card.addEventListener("click", function () {
       const cardDate = ""

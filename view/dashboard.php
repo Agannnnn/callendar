@@ -10,7 +10,9 @@
 
 <body>
   <main>
-    <h1>Kalender <?= "$m/$y" ?></h1>
+    <h1>Kalender
+      <?= "$m/$y" ?>
+    </h1>
     <section class="section-input">
       <a id="logout-btn" href="<?= APP_URL ?>logout/">Logout</a>
       <div>
@@ -68,32 +70,37 @@
         <a href="<?= APP_URL . "index.php?m=$prevMonth&y=$prevYear" ?>">&leftarrow;</a>
         <?php
         $uri = explode("/", $_SERVER['REQUEST_URI']);
-        if (!preg_match("/^index\.php$/", end($uri))) : ?>
+        if (!preg_match("/^index\.php$/", end($uri))): ?>
           <a href="<?= APP_URL ?>index.php">Kembali</a>
         <?php endif ?>
         <a href="<?= APP_URL . "index.php?m=$nextMonth&y=$nextYear" ?>">&rightarrow;</a>
       </div>
       <div class="calendar">
-        <?php foreach ($calendar as $day) : ?>
-          <div class="day<?= $day['event'] > 0 ? ' ada-acara' : '' ?>" data-day="<?= $day['date'] ?>" data-month="<?= $m ?>" data-year="<?= $y ?>">
+        <?php foreach ($calendar as $day): ?>
+          <div class="day<?= $day['event'] > 0 ? ' ada-acara' : '' ?>" data-day="<?= $day['date'] ?>"
+            data-month="<?= $m ?>" data-year="<?= $y ?>">
             <div class="day-date">
-              <h2><?= $day['date'] ?></h2>
+              <h2>
+                <?= $day['date'] ?>
+              </h2>
             </div>
             <ul class="event">
-              <?php if (count($day['events']) > 0) : ?>
+              <?php if (count($day['events']) > 0): ?>
                 <li>
                   <b>Daftar acara</b>
                 </li>
-                <?php foreach ($day['events'] as $event) : ?>
+                <?php foreach ($day['events'] as $event): ?>
                   <li>
-                    <span><?= $event['name'] ?></span>
+                    <span>
+                      <?= $event['name'] ?>
+                    </span>
                     <div class="buttons">
-                      <button class="btn-hapus-event" data-e-id="<?= $event['e_id'] ?>">Hapus</button>
-                      <button class="btn-edit-event" data-e-id="<?= $event['e_id'] ?>">Edit</button>
+                      <button class="delete-event-btn" data-e-id="<?= $event['e_id'] ?>">Hapus</button>
+                      <button class="edit-event-btn" data-e-id="<?= $event['e_id'] ?>">Edit</button>
                     </div>
                   </li>
                 <?php endforeach ?>
-              <?php else : ?>
+              <?php else: ?>
                 <li>Tidak ada acara</li>
               <?php endif ?>
             </ul>
