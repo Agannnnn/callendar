@@ -14,7 +14,7 @@ function GET()
   }
 
   $eId = $conn->real_escape_string($_GET['eId']);
-  $owner = $_SESSION['user_id'];
+  $owner = $conn->real_escape_string($_SESSION['user_id']);
 
   $stmt = $conn->prepare("SELECT name, description, start, end FROM events WHERE id = ? AND owner = ?");
   $stmt->bind_param('ss', $eId, $owner);
@@ -43,7 +43,7 @@ function POST()
   $start = $conn->real_escape_string($requestBody->dateFrom);
   $end = $conn->real_escape_string($requestBody->dateTo);
 
-  $owner = $_SESSION['user_id'];
+  $owner = $conn->real_escape_string($_SESSION['user_id']);
 
   $stmt = $conn->prepare("INSERT INTO events (id, name, description, start, end, owner) VALUES (UUID(),?,?,?,?,?)");
   $stmt->bind_param('ssss', $name, $description, $start, $end, $owner);
@@ -72,7 +72,7 @@ function PATCH()
   $start = $conn->real_escape_string($requestBody->dateFrom);
   $end = $conn->real_escape_string($requestBody->dateTo);
 
-  $owner = $_SESSION['user_id'];
+  $owner = $conn->real_escape_string($_SESSION['user_id']);
 
   $stmt = $conn->prepare("UPDATE events SET name = ?, description = ?, start = ?, end = ? WHERE id = ? AND owner = ?");
   $stmt->bind_param('ssssss', $name, $description, $start, $end, $eId, $owner);
@@ -97,7 +97,7 @@ function DELETE()
 
   $eId = $conn->real_escape_string($requestBody->eId);
 
-  $owner = $_SESSION['user_id'];
+  $owner = $conn->real_escape_string($_SESSION['user_id']);
 
   $stmt = $conn->prepare("DELETE FROM events WHERE id = ? AND owner = ?");
   $stmt->bind_param('ss', $eId, $owner);
