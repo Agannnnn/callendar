@@ -38,11 +38,13 @@ function GET()
     $prevYear = $y - 1;
   }
 
+  $user = $conn->real_escape_string($_SESSION['user_id']);
+
   $calendar = [];
   for ($day = 1; $day <= cal_days_in_month(CAL_GREGORIAN, $m, $y); $day++) {
     $now = "$y/$m/$day";
-    $stmt = $conn->prepare("SELECT id, name FROM events WHERE start <= ? AND end >= ?");
-    $stmt->bind_param('ss', $now, $now);
+    $stmt = $conn->prepare("SELECT id, name FROM events WHERE start <= ? AND end >= ? AND owner = ?");
+    $stmt->bind_param('sss', $now, $now, $user);
     $stmt->execute();
     $res = $stmt->get_result();
 
