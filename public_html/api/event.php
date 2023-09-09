@@ -3,25 +3,27 @@ include_once __DIR__ . "/../../config.php";
 
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH');
 
-function handleGet()
+function GET()
 {
-  global $DB;
+  global $conn;
 
   if (!isset($_GET['eId'])) {
     http_response_code(404);
-    echo json_encode(['code' => 404, 'message' => 'Data acara tidak dapat ditemukan 1']);
+    echo json_encode(['code' => 404, 'message' => 'Event id is not provided']);
     return;
   }
-  $eId = $DB->real_escape_string($_GET['eId']);
 
-  $stmt = $DB->prepare("SELECT `nama`, `deskripsi`, `dari`, `sampai` FROM `acara` WHERE `e_id` = ?");
-  $stmt->bind_param('s', $eId);
+  $eId = $conn->real_escape_string($_GET['eId']);
+  $owner = $_SESSION['user_id'];
+
+  $stmt = $conn->prepare("SELECT name, description, start, end FROM events WHERE id = ? AND owner = ?");
+  $stmt->bind_param('ss', $eId, $owner);
   $stmt->execute();
   $result = $stmt->get_result();
 
   if ($result->num_rows == 0) {
     http_response_code(404);
-    echo json_encode(['code' => 404, 'message' => 'Data acara tidak dapat ditemukan 2']);
+    echo json_encode(['code' => 404, 'message' => 'No event found']);
     return;
   }
 
@@ -30,100 +32,101 @@ function handleGet()
   return;
 }
 
-function handlePost()
+function POST()
 {
-  global $DB;
+  global $conn;
 
   $requestBody = json_decode(trim(file_get_contents('php://input')));
 
-  $eId = "";
-  $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_';
-  for ($i = 0; $i < 8; $i++) {
-    $eId .= $characters[rand(0, strlen($characters) - 1)];
-  }
-  $name = $DB->real_escape_string($requestBody->name);
-  $description = $DB->real_escape_string($requestBody->description);
-  $from = $DB->real_escape_string($requestBody->dateFrom);
-  $to = $DB->real_escape_string($requestBody->dateTo);
+  $name = $conn->real_escape_string($requestBody->name);
+  $description = $conn->real_escape_string($requestBody->description);
+  $start = $conn->real_escape_string($requestBody->dateFrom);
+  $end = $conn->real_escape_string($requestBody->dateTo);
 
-  $stmt = $DB->prepare("INSERT INTO `acara` (`e_id`, `nama`, `deskripsi`, `dari`, `sampai`) VALUES (?,?,?,?,?)");
-  $stmt->bind_param('sssss', $eId, $name, $description, $from, $to);
+  $owner = $_SESSION['user_id'];
+
+  $stmt = $conn->prepare("INSERT INTO events (id, name, description, start, end, owner) VALUES (UUID(),?,?,?,?,?)");
+  $stmt->bind_param('ssss', $name, $description, $start, $end, $owner);
   if ($stmt->execute()) {
     http_response_code(200);
-    echo json_encode(['code' => 200, 'message' => 'Data acara berhasil ditambahkan']);
+    echo json_encode(['code' => 200, 'message' => 'New event is saved']);
     return;
   }
 
-  writeLog("Menambah jadwal");
+  writeLog("Added event");
 
   http_response_code(400);
-  echo json_encode(['code' => 400, 'message' => 'Data acara tidak berhasil ditambahkan']);
+  echo json_encode(['code' => 400, 'message' => 'Failed to save new event']);
   return;
 }
 
-function handlePatch()
+function PATCH()
 {
-  global $DB;
+  global $conn;
 
   $requestBody = json_decode(trim(file_get_contents('php://input')));
 
-  $eId = $DB->real_escape_string($requestBody->eId);
-  $name = $DB->real_escape_string($requestBody->name);
-  $description = $DB->real_escape_string($requestBody->description);
-  $from = $DB->real_escape_string($requestBody->dateFrom);
-  $to = $DB->real_escape_string($requestBody->dateTo);
+  $eId = $conn->real_escape_string($requestBody->eId);
+  $name = $conn->real_escape_string($requestBody->name);
+  $description = $conn->real_escape_string($requestBody->description);
+  $start = $conn->real_escape_string($requestBody->dateFrom);
+  $end = $conn->real_escape_string($requestBody->dateTo);
 
-  $stmt = $DB->prepare("UPDATE `acara` SET `nama` = ?, `deskripsi` = ?, `dari` = ?, `sampai` = ? WHERE `e_id` = ?");
-  $stmt->bind_param('sssss', $name, $description, $from, $to, $eId);
+  $owner = $_SESSION['user_id'];
+
+  $stmt = $conn->prepare("UPDATE events SET name = ?, description = ?, start = ?, end = ? WHERE id = ? AND owner = ?");
+  $stmt->bind_param('ssssss', $name, $description, $start, $end, $eId, $owner);
   if ($stmt->execute()) {
     http_response_code(200);
-    echo json_encode(['code' => 200, 'message' => 'Data acara berhasil diubah']);
+    echo json_encode(['code' => 200, 'message' => 'Event is updated']);
     return;
   }
 
-  writeLog("Mengubah jadwal");
+  writeLog("Updated event: $eId");
 
   http_response_code(500);
-  echo json_encode(['code' => 500, 'message' => 'Data acara tidak berhasil diubah']);
+  echo json_encode(['code' => 500, 'message' => 'Failed to update event']);
   return;
 }
 
-function handleDelete()
+function DELETE()
 {
-  global $DB;
+  global $conn;
 
   $requestBody = json_decode(trim(file_get_contents('php://input')));
 
-  $eId = $DB->real_escape_string($requestBody->eId);
+  $eId = $conn->real_escape_string($requestBody->eId);
 
-  $stmt = $DB->prepare("DELETE FROM `acara` WHERE `e_id` = ?");
-  $stmt->bind_param('s', $eId);
+  $owner = $_SESSION['user_id'];
+
+  $stmt = $conn->prepare("DELETE FROM events WHERE id = ? AND owner = ?");
+  $stmt->bind_param('ss', $eId, $owner);
   if ($stmt->execute()) {
     http_response_code(203);
-    echo json_encode(['code' => 203, 'message' => 'Data acara berhasil dihapus']);
+    echo json_encode(['code' => 203, 'message' => 'Event is deleted']);
     return;
   }
 
-  writeLog("Menghapus jadwal");
+  writeLog("Removed event: $eId");
 
   http_response_code(404);
-  echo json_encode(['code' => 404, 'message' => 'Data acara tidak berhasil dihapus']);
+  echo json_encode(['code' => 404, 'message' => 'Failed to delete event']);
   return;
 }
 
 if (preg_match('/^GET$/', $_SERVER['REQUEST_METHOD'])) {
-  handleGet();
-  die();
+  GET();
+  exit;
 }
 
 if (preg_match('/^POST$/', $_SERVER['REQUEST_METHOD'])) {
   $method = json_decode(trim(file_get_contents('php://input')))->method;
   if (preg_match('/^POST$/', $method)) {
-    HandlePost();
+    POST();
   } else if (preg_match('/^PATCH$/', $method)) {
-    handlePatch();
+    PATCH();
   } else if (preg_match('/^DELETE$/', $method)) {
-    handleDelete();
+    DELETE();
   }
-  die();
+  exit;
 }
