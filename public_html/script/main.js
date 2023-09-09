@@ -12,13 +12,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const dateFrom = formAddEvent.elements[1].value;
     const dateTo = formAddEvent.elements[2].value;
     if (name.match(/^.+$/)) {
-      fetch("".concat(window.location, "api/event.php"), {
+      fetch(new URL("api/event.php", window.location), {
         method: "POST",
         credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-type": "application/json",
-          Authentication: "",
         },
         body: JSON.stringify({
           name: name,
@@ -55,13 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const dateFrom = formEditEvent.elements[2].value;
     const dateTo = formEditEvent.elements[3].value;
     if (name.match(/^.+$/)) {
-      fetch("".concat(window.location, "api/event.php"), {
+      fetch(new URL("api/event.php", window.location), {
         method: "POST",
         credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-type": "application/json",
-          Authentication: "",
         },
         body: JSON.stringify({
           eId: eId,
@@ -93,20 +91,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   editEventBtn.forEach(function (btn) {
     btn.addEventListener("click", function () {
-      fetch(
-        ""
-          .concat(window.location, "api/event.php?eId=")
-          .concat(btn.dataset.eId),
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-type": "application/json",
-            Authentication: "",
-          },
-        }
-      )
+      fetch(new URL(`api/event.php?eId=${btn.dataset.eId}`, window.location), {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-type": "application/json",
+        },
+      })
         .then(function (res) {
           return res.json();
         })
@@ -131,13 +123,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   deleteEventBtn.forEach(function (btn) {
     btn.addEventListener("click", function () {
-      fetch("".concat(window.location, "api/event.php"), {
+      fetch(new URL("api/event.php", window.location), {
         credentials: "include",
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-type": "application/json",
-          Authentication: "",
         },
         body: JSON.stringify({ eId: btn.dataset.eId, method: "DELETE" }),
       })
