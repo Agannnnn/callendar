@@ -1,11 +1,15 @@
 <?php
 require_once __DIR__ . "/../config.php";
 
-Authentication::check();
+if (!$auth->isAuthenticated()) {
+  $auth->logout();
+  header('Location: ' . APP_URL . 'login/');
+  exit;
+}
 
-function handleGet()
+function GET()
 {
-  global $DB;
+  global $conn;
 
   $m = $_GET['m'] ?? "";
   $y = $_GET['y'] ?? "";
@@ -19,6 +23,7 @@ function handleGet()
   $nextMonth = $m + 1;
   $nextYear = $y;
 
+  // Setting the next month to January (1) and next year to year + 1
   if ($nextMonth == 13) {
     $nextMonth = 1;
     $nextYear = $y + 1;
@@ -27,6 +32,7 @@ function handleGet()
   $prevMonth = $m - 1;
   $prevYear = $y;
 
+  // Setting the previous month to December (12) and the year to this year - 1
   if ($prevMonth == 0) {
     $prevMonth = 12;
     $prevYear = $y - 1;
@@ -35,7 +41,7 @@ function handleGet()
   $calendar = [];
   for ($day = 1; $day <= cal_days_in_month(CAL_GREGORIAN, $m, $y); $day++) {
     $now = "$y/$m/$day";
-    $stmt = $DB->prepare("SELECT `e_id`, `nama` FROM `acara` WHERE `dari` <= ? AND `sampai` >= ?");
+    $stmt = $conn->prepare("SELECT id, name FROM events WHERE start <= ? AND end >= ?");
     $stmt->bind_param('ss', $now, $now);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -44,8 +50,8 @@ function handleGet()
     if ($res->num_rows > 0) {
       while ($row = $res->fetch_assoc()) {
         array_push($events, [
-          'name' => $row['nama'],
-          'e_id' => $row['e_id']
+          'e_id' => $row['id'],
+          'name' => $row['name'],
         ]);
       }
     }
@@ -61,5 +67,5 @@ function handleGet()
 }
 
 if (preg_match("/^(GET|get)$/", $_SERVER["REQUEST_METHOD"])) {
-  handleGet();
+  GET();
 }
