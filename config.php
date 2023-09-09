@@ -1,10 +1,10 @@
 <?php
-define('APP_HOST', 'localhost/projek-kalender');
-define('APP_URL', 'http://localhost/projek-kalender/');
-define("DB_HOST", "localhost");
+define('APP_HOST', '127.0.0.1/callendar');
+define('APP_URL', 'http://127.0.0.1/callendar/');
+define("DB_HOST", "127.0.0.1");
 define("DB_USERNAME", "root");
 define("DB_PASSWORD", "");
-define("DB_NAME", "projek_kalender");
+define("DB_NAME", "callendar_project");
 
 $DB = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 
