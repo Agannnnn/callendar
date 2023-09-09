@@ -50,10 +50,26 @@ class Authentication
     }
   }
 
-  public function login(string $username, string $pasword): bool
+  public function signup(string $username, string $password): bool
   {
     $escUsername = $this->db->real_escape_string($username);
-    $escPasword = password_hash($this->db->real_escape_string($pasword), PASSWORD_DEFAULT);
+    $escPasword = password_hash($this->db->real_escape_string($password), PASSWORD_DEFAULT);
+
+    $stmt = $this->db->prepare('INSERT INTO users (id,username,password) VALUES (UUID(),?,?)');
+    $stmt->bind_param('ss', $escUsername, $escPasword);
+    $stmt->execute();
+
+    if ($stmt->affected_rows == 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public function login(string $username, string $password): bool
+  {
+    $escUsername = $this->db->real_escape_string($username);
+    $escPasword = password_hash($this->db->real_escape_string($password), PASSWORD_DEFAULT);
 
     $stmt = $this->db->prepare('SELECT id FROM users WHERE username = ? AND password = ?');
     $stmt->bind_param('ss', $escUsername, $escPasword);
