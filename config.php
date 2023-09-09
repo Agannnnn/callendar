@@ -43,7 +43,7 @@ class Authentication
     $stmt = $this->db->prepare('SELECT id FROM users WHERE id = ? AND login_info = ?');
     $stmt->bind_param('ss', $userId, $loginInfo);
     $stmt->execute();
-    if ($stmt->affected_rows == 1) {
+    if ($stmt->get_result()->num_rows == 1) {
       return true;
     } else {
       return false;
@@ -68,24 +68,36 @@ class Authentication
 
   public function login(string $username, string $password): bool
   {
+    session_start();
+
     $escUsername = $this->db->real_escape_string($username);
-    $escPasword = password_hash($this->db->real_escape_string($password), PASSWORD_DEFAULT);
+    $escPasword = $this->db->real_escape_string($password);
 
-    $stmt = $this->db->prepare('SELECT id FROM users WHERE username = ? AND password = ?');
-    $stmt->bind_param('ss', $escUsername, $escPasword);
+    $stmt = $this->db->prepare('SELECT id, password FROM users WHERE username = ?');
+    $stmt->bind_param('s', $escUsername);
     $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
 
-    if ($stmt->affected_rows == 1) {
-      $res = $stmt->get_result();
-      $id = $res->fetch_assoc()['id'];
+    if (!password_verify($escPasword, $res['password'])) {
+      return false;
+    }
+
+    if ($stmt->get_result()->num_rows == 1) {
+      $id = $res['id'];
 
       $loginInfo = hash('sha256', (new DateTime())->getTimestamp() . $id);
 
-      $stmt = $this->db->prepare('UPDATE users SET login_id = ? WHERE id = ?');
+      $stmt = $this->db->prepare('UPDATE users SET login_info = ? WHERE id = ?');
       $stmt->bind_param('ss', $loginInfo, $id);
       $stmt->execute();
 
       if ($stmt->affected_rows == 1) {
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $id;
+        $_SESSION['login_info'] = $loginInfo;
+
+        writeLog('Logged in');
+
         return true;
       }
     }
@@ -95,6 +107,7 @@ class Authentication
   public function logout()
   {
     session_destroy();
+    writeLog('Logged out');
     return true;
   }
 }
