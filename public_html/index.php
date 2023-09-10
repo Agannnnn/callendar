@@ -2,7 +2,6 @@
 require_once __DIR__ . "/../config.php";
 
 if (!$auth->isAuthenticated()) {
-  $auth->logout();
   header('Location: ' . APP_URL . 'login/');
   exit;
 }
