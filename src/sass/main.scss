@@ -1,4 +1,6 @@
-$primary-colour: rgb(48, 149, 226);
+$primary-colour: #3095e2;
+$text-colour: #2d2d2d;
+$shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 
 * {
   font-family: sans-serif;
@@ -7,17 +9,21 @@ body {
   margin: 0;
 }
 input {
-  padding: 5px;
+  background-color: #fff;
+  color: $text-colour;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  box-shadow: $shadow;
+  font-size: 1rem;
 }
 button {
-  border: 2px solid $primary-colour;
   background-color: #fff;
-  border-radius: 4px;
+  color: $text-colour;
+  border: none;
+  border-radius: 6px;
   padding: 5px 10px;
+  box-shadow: $shadow;
   cursor: pointer;
-
-  &:is(:focus, :active, :hover) {
-    background-color: $primary-colour;
-    color: #fff;
-  }
+  font-size: 1rem;
 }

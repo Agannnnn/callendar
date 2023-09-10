@@ -11,15 +11,19 @@
 <body>
     <form method="POST" action="<?= APP_URL ?>signup/">
         <h1>Sign Up</h1>
-        <label for="username">Username</label>
-        <input type="text" name="username" id="username" placeholder="Masukan username anda">
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Masukan password anda">
         <?php if (isset($error)): ?>
-            <span style="display:block;color:red;padding-bottom:10px;">Username telah terpakai</span>
+            <span class="error">Wrong username or password</span>
         <?php endif ?>
+        <div class="form-input">
+            <label for="username">Username</label>
+            <input type="text" name="username" id="username" placeholder="my_username123">
+        </div>
+        <div class="form-input">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password">
+        </div>
         <button type="submit">Sign Up</button>
-        <a href="<?= APP_URL ?>login/">Login</a>
+        <a href="<?= APP_URL ?>login/" class="option">Login</a>
     </form>
 </body>
 
