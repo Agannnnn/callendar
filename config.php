@@ -68,6 +68,7 @@ class Authentication
 
   public function login(string $username, string $password): bool
   {
+    session_destroy();
     session_start();
 
     $escUsername = $this->db->real_escape_string($username);
@@ -76,13 +77,15 @@ class Authentication
     $stmt = $this->db->prepare('SELECT id, password FROM users WHERE username = ?');
     $stmt->bind_param('s', $escUsername);
     $stmt->execute();
-    $res = $stmt->get_result()->fetch_assoc();
 
-    if (!password_verify($escPasword, $res['password'])) {
-      return false;
-    }
+    $res = $stmt->get_result();
+    if ($res->num_rows == 1) {
+      $res = $res->fetch_assoc();
 
-    if ($stmt->get_result()->num_rows == 1) {
+      if (!password_verify($escPasword, $res['password'])) {
+        return false;
+      }
+
       $id = $res['id'];
 
       $loginInfo = hash('sha256', (new DateTime())->getTimestamp() . $id);
@@ -112,14 +115,14 @@ class Authentication
   }
 }
 
-function writeLog($activity)
+function writeLog(string $activity)
 {
-  global $DB;
+  global $conn;
 
-  $username = $DB->real_escape_string($_SESSION['user_id']);
-  $activity = $DB->real_escape_string($activity);
+  $username = $conn->real_escape_string($_SESSION['user_id']);
+  $activity = $conn->real_escape_string($activity);
 
-  $stmt = $DB->prepare('INSERT INTO `logs` (`user_id`, `activity`) VALUES (?,?)');
+  $stmt = $conn->prepare('INSERT INTO logs (user_id, activity) VALUES (?,?)');
   $stmt->bind_param('ss', $username, $activity);
   $stmt->execute();
 }
