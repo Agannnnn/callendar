@@ -1,2 +1,3 @@
 .vscode
-public_html/style/*
+public_html/style/**
+public_html/script/**
