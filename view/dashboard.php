@@ -84,6 +84,11 @@
               <h2>
                 <?= $day['date'] ?>
               </h2>
+              <div class="events-node">
+                <?php foreach ($day['events'] as $event): ?>
+                  <div class="event-node"></div>
+                <?php endforeach ?>
+              </div>
             </div>
             <ul class="event">
               <?php if (count($day['events']) > 0): ?>
