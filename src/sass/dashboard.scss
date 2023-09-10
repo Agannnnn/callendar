@@ -1,225 +1,175 @@
 @use "./main";
 
-h1 {
-  margin: auto;
-  text-align: center;
-  padding: 10px 0;
-  border-bottom: 2px solid main.$primary-colour;
-}
 main {
-  height: 100vh;
   display: grid;
-  grid-template-columns: minmax(300px, 1fr) 4fr;
-  grid-template-rows: min-content 1fr;
-  grid-template-areas: "judul judul" "section-input section-calendar";
+  grid-template-columns: max-content 1fr;
+  gap: 2rem;
+  padding: 1rem;
+  height: calc(100vh - 2rem);
 
-  h1 {
-    grid-area: judul;
-    width: 100%;
-  }
-
-  .section-input {
-    grid-area: section-input;
+  .sidepanel {
+    box-shadow: main.$shadow;
+    height: fit-content;
+    border-radius: 10px;
+    padding: 1.2rem;
     display: flex;
-    align-items: center;
     flex-direction: column;
-    justify-content: flex-start;
-    border-right: 3px solid main.$primary-colour;
+    gap: 1rem;
 
-    & > div {
-      position: sticky;
-      top: 0;
+    h1 {
+      text-align: center;
+      margin: 0;
+    }
+    h2 {
+      margin: 0 0 1rem;
     }
 
-    #logout-btn {
-      border: 2px solid main.$primary-colour;
-      text-decoration: none;
-      border-radius: 4px;
-      padding: 6px 10px;
-      margin-top: 5px;
-      color: #000;
+    .logout {
+      width: 100%;
+      transition-duration: 200ms;
 
       &:is(:hover, :active, :focus) {
-        background-color: red;
-        border-color: red;
+        background-color: #f15241;
         color: #fff;
       }
     }
 
-    .section-input-form {
-      border: 2px solid main.$primary-colour;
-      background-color: #fff;
-      margin: 5px 15px 15px;
-      padding: 10px;
-      border-radius: 6px;
-      box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+    form {
+      box-shadow: main.$shadow;
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
 
-      h2 {
-        text-align: center;
+      .form-input {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
       }
 
-      & .hidden {
+      .hidden {
         display: none;
       }
-      .input {
-        display: grid;
-        margin: 15px 0;
-        align-items: flex-start;
-        grid-template-columns: minmax(70px, 1fr) 2fr;
-
-        &:first-child {
-          margin-top: 10px;
-        }
-        &:last-child {
-          margin-bottom: 10px;
-        }
-
-        input {
-          width: 100%;
-
-          &#eId {
-            pointer-events: none;
-            cursor: none;
-          }
-        }
-        label {
-          width: 100%;
-          color: main.$primary-colour;
-        }
-        textarea {
-          resize: vertical;
-        }
-      }
-
-      button[type="submit"] {
-        width: 100%;
-        padding: 5px 0;
-        border-radius: 4px;
-        border: none;
-        transition: 150ms;
-        cursor: pointer;
-        border: 2px solid main.$primary-colour;
-        background-color: #fff;
-
-        &:is(:hover, :active, :focus) {
-          background-color: main.$primary-colour;
-          color: #fff;
-        }
-      }
     }
-  }
-  .container {
-    grid-area: section-calendar;
-    background-color: #fff;
+  } // sidepanel
 
+  .main-content {
     .navigation {
-      margin: auto;
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      gap: 5px;
-      font-size: 30px;
-      width: min-content;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      box-shadow: main.$shadow;
+      border-radius: 999px;
+      padding: 0.3rem;
+      opacity: 0.5;
+      transition-duration: 200ms;
+
+      &:is(:hover, :focus, :active, :focus-within) {
+        opacity: 1;
+      }
 
       a {
+        padding: 8px;
+        border-radius: 999px;
+        background-color: #fff;
+        color: main.$text-colour;
         text-decoration: none;
-        color: #000;
-        font-weight: bolder;
+
+        &.navigation-button {
+          border: 2px solid main.$primary-colour;
+          padding: 8px 16px;
+
+          &:is(:hover, :focus, :active, :focus-within) {
+            color: #fff;
+            background-color: main.$primary-colour;
+          }
+        }
       }
     }
 
-    .calendar {
-      margin: auto;
-      max-width: 1280px;
+    .callendar {
       display: grid;
-      grid-template-columns: repeat(7, minmax(150px, 1fr));
+      grid-template-columns: repeat(7, 1fr);
+      height: 100%;
+      gap: 1rem;
 
       .day {
-        display: grid;
         border-radius: 8px;
-        grid-template-rows: minmax(140px, auto) min-content;
-        margin: 5px;
-        background-color: #fff;
-        box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-        transition-duration: 200ms;
-        height: max-content;
+        box-shadow: main.$shadow;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: relative;
 
-        &:is(:hover, :focus) {
-          transform: scale(1.01);
-          z-index: 3;
-
-          .event {
-            z-index: 4;
-            display: block;
-          }
+        &.filled {
+          border: 4px solid main.$primary-colour;
+          color: main.$primary-colour;
         }
 
-        &.ada-acara {
-          border: 2px solid main.$primary-colour;
-
-          & ~ .event {
-            border-top-color: rgb(141, 114, 197) !important;
-          }
-        }
-
-        .day-date {
+        .events-node {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
           display: flex;
-          align-items: center;
-          justify-content: center;
+          flex-direction: row;
+          flex-wrap: wrap;
+          height: max-content;
+
+          .event-node {
+            margin: 5px;
+            border-radius: 999px;
+            width: 0.7rem;
+            height: 0.7rem;
+            background-color: main.$primary-colour;
+          }
         }
 
         .event {
-          position: absolute;
-          left: 50%;
-          top: 100%;
-          transform: translate(-50%, -25px) scale(1.05);
           display: none;
-          background-color: #fff;
-          width: 100%;
-          border: 2px solid rgb(100, 100, 100);
-          border-radius: 6px;
-          transition: height 200ms;
-          list-style: none;
-          margin: 0;
-          padding: 0;
+          position: absolute;
+        }
 
-          li {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            margin: 5px 10px;
-            padding-top: 5px;
-
-            &:not(:first-child) {
-              border-top: 2px solid rgba(0, 0, 0, 0.3);
-            }
-
-            .buttons {
-              display: flex;
-              flex-direction: column;
-              gap: 3px;
-
-              button {
-                cursor: pointer;
-                border: 2px solid main.$primary-colour;
-                border-radius: 4px;
-                background-color: #fff;
-
-                &:is(:hover, :focus) {
-                  background-color: main.$primary-colour;
-                  color: #fff;
-
-                  &.btn-hapus-event {
-                    border-color: red;
-                    background-color: red;
-                  }
-                }
-              }
-            }
-          }
+        &:is(:focus-within, :hover) .event {
+          display: block !important;
         }
       }
     }
-  }
-}
+  } // main-content
+
+  .events-list {
+    position: fixed;
+    right: 2rem;
+    bottom: 2rem;
+    box-shadow: main.$shadow;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #fff;
+
+    h4 {
+      margin: 0;
+    } // h4
+
+    .events {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 2rem;
+      }
+    }
+  } // events-list
+} // main

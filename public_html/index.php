@@ -37,6 +37,10 @@ function GET()
     $prevYear = $y - 1;
   }
 
+  $dateObj = new DateTime();
+  $dateObj->setDate($y, $m, 1);
+  $formattedDate = $dateObj->format('M/Y');
+
   $user = $conn->real_escape_string($_SESSION['user_id']);
 
   $calendar = [];

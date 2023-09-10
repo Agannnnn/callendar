@@ -4,10 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
     "#edit-event"
   ) as HTMLFormElement;
   const editEventBtn = document.querySelectorAll(
-    ".btn-edit-event"
+    ".edit-event-btn"
   ) as NodeListOf<HTMLButtonElement>;
   const hapusEventBtn = document.querySelectorAll(
-    ".btn-hapus-event"
+    ".delete-event-btn"
   ) as NodeListOf<HTMLButtonElement>;
   const eventsCard = document.querySelectorAll(
     ".day"
@@ -22,13 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const dateTo = (formAddEvent.elements[2] as HTMLInputElement).value;
 
     if (name.match(/^.+$/)) {
-      fetch(`${window.location.origin}/api/event.php`, {
+      fetch(new URL("api/event.php", window.location.toString()), {
         method: "POST",
         credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-type": "application/json",
-          Authentication: "",
         },
         body: JSON.stringify({
           name,
@@ -47,9 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           alert(res.message);
         })
-        .catch(() => alert("Data acara tidak berhasil ditambahkan"));
+        .catch(() => alert("Failed to insert new event"));
     } else {
-      alert("Isikan input dengan benar");
+      alert("Please fill all the inputs");
     }
   });
 
@@ -63,13 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const dateTo = (formEditEvent.elements[3] as HTMLInputElement).value;
 
     if (name.match(/^.+$/)) {
-      fetch(`${window.location.origin}/api/event.php`, {
+      fetch(new URL("api/event.php", window.location.toString()), {
         method: "POST",
         credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-type": "application/json",
-          Authentication: "",
         },
         body: JSON.stringify({
           eId,
@@ -89,74 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           alert(res.message);
         })
-        .catch(() => alert("Data acara tidak berhasil diubah"));
+        .catch(() => alert("Failed to update event"));
     } else {
-      alert("Isikan input dengan benar");
+      alert("Please fill all the inputs");
     }
-  });
-
-  editEventBtn.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      fetch(`${window.location.origin}/api/event.php?eId=${btn.dataset.eId}`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-type": "application/json",
-          Authentication: "",
-        },
-      })
-        .then((res) => res.json())
-        .then((eventData) => {
-          (
-            formEditEvent.querySelector("#inputs") as HTMLDivElement
-          ).classList.remove("hidden");
-
-          const formEditInputs = formEditEvent.elements;
-
-          (formEditInputs[0] as HTMLInputElement).value = btn.dataset
-            .eId as string;
-          (formEditInputs[1] as HTMLInputElement).value = eventData.nama;
-          (formEditInputs[4] as HTMLInputElement).value = (
-            eventData.deskripsi as string
-          )
-            .split(/\s/)
-            .map((kata) => {
-              kata = kata.replace(/[^\\r]\\n/g, "\r\n");
-              kata = kata.replace(/\\\\/g, "\\");
-              return kata;
-            })
-            .join(" ");
-          (formEditInputs[2] as HTMLInputElement).value = eventData.dari;
-          (formEditInputs[3] as HTMLInputElement).value = eventData.sampai;
-        });
-    });
-  });
-
-  hapusEventBtn.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      fetch(`${window.location.origin}/api/event.php`, {
-        credentials: "include",
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-type": "application/json",
-          Authentication: "",
-        },
-        body: JSON.stringify({ eId: btn.dataset.eId, method: "DELETE" }),
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          if (res.code === 203) {
-            alert(res.message);
-            window.location.reload();
-            return;
-          }
-          alert(res.message);
-          return;
-        })
-        .catch(() => alert("Data tidak berhasil dihapus"));
-    });
   });
 
   eventsCard.forEach((card) => {
@@ -170,9 +104,91 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `0${card.dataset.day}`
           : card.dataset.day
       }`;
-      (formAddEvent.elements[1] as HTMLInputElement).value = cardDate;
-      (formAddEvent.elements[2] as HTMLInputElement).value = cardDate;
+
+      (formAddEvent.elements[1] as HTMLInputElement).value = "";
+      (formAddEvent.elements[2] as HTMLInputElement).value = "";
       (formAddEvent.elements[0] as HTMLInputElement).focus();
+
+      document.querySelector("#event-list-date")!.innerHTML =
+        card.dataset.day ?? "";
+
+      const cardEvents = (
+        JSON.parse(card.dataset.events ?? "[]") as {
+          e_id: string;
+          name: string;
+        }[]
+      ).map((event) => {
+        return `<li>
+            <span>
+              ${event.name}
+            </span>
+            <div class="buttons">
+              <button class="edit-event-btn" data-e-id="${event.e_id}" onclick="editEventHandler('${event.e_id}')">Edit</button>
+              <button class="delete-event-btn" data-e-id="${event.e_id}" onclick="deleteEventHandler('${event.e_id}')">Remove</button>
+            </div>
+          </li>`;
+      });
+
+      document.querySelector(".events-list .events")!.innerHTML =
+        cardEvents.join("");
     });
   });
 });
+
+const editEventHandler = (eventId: string) => {
+  fetch(new URL(`api/event.php?eId=${eventId}`, window.location.toString()), {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "Content-type": "application/json",
+    },
+  })
+    .then((res) => res.json())
+    .then((eventData) => {
+      const formEditEvent = document.querySelector(
+        "#edit-event"
+      ) as HTMLFormElement;
+      (
+        formEditEvent.querySelector("#inputs") as HTMLDivElement
+      ).classList.remove("hidden");
+
+      const formEditInputs = formEditEvent.elements;
+
+      (formEditInputs[0] as HTMLInputElement).value = eventId;
+      (formEditInputs[1] as HTMLInputElement).value = eventData.name;
+      (formEditInputs[4] as HTMLInputElement).value = `${eventData.description}`
+        .split(/\s/)
+        .map((kata) => {
+          kata = kata.replace(/[^\\r]\\n/g, "\r\n");
+          kata = kata.replace(/\\\\/g, "\\");
+          return kata;
+        })
+        .join(" ");
+      (formEditInputs[2] as HTMLInputElement).value = eventData.start;
+      (formEditInputs[3] as HTMLInputElement).value = eventData.end;
+    });
+};
+
+const deleteEventHandler = (eventId: string) => {
+  fetch(new URL("api/event.php", window.location.toString()), {
+    credentials: "include",
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({ eId: eventId, method: "DELETE" }),
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.code === 203) {
+        alert(res.message);
+        window.location.reload();
+        return;
+      }
+      alert(res.message);
+      return;
+    })
+    .catch(() => alert("Failed to remove event"));
+};
